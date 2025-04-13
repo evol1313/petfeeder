@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pet Feeder</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f8ff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+    input, button {
+      margin: 10px;
+      padding: 10px;
+      font-size: 16px;
+    }
+    #status, #lastFeed {
+      margin-top: 20px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h2>🐾 Smart Pet Feeder</h2>
+  <input type="text" id="petName" placeholder="Enter Pet Name">
+  <input type="number" id="petAge" placeholder="Enter Pet Age">
+  <br>
+  <button onclick="feedNow()">Feed Now</button>
+  <input type="number" id="timerMinutes" placeholder="Feed in (minutes)">
+  <button onclick="scheduleFeed()">Set Timer</button>
+  <p id="status">ESP32 Status: Checking...</p>
+  <p id="lastFeed">Last Fed: Never</p>
+
+  <script>
+    const espIp = "http://172.20.10.8"; // Replace with your ESP32 IP
+
+    function updateStatus() {
+      fetch(`${espIp}/status`)
+        .then(() => {
+          document.getElementById("status").innerText = "ESP32 Status: Connected";
+        })
+        .catch(() => {
+          document.getElementById("status").innerText = "ESP32 Status: Disconnected";
+        });
+    }
+
+    function feedNow() {
+      fetch(`${espIp}/feed`)
+        .then(res => res.text())
+        .then(data => {
+          alert(data);
+          document.getElementById("lastFeed").innerText = "Last Fed: " + new Date().toLocaleString();
+        })
+        .catch(() => alert("Failed to contact ESP32"));
+    }
+
+    function scheduleFeed() {
+      let mins = parseInt(document.getElementById("timerMinutes").value);
+      if (!isNaN(mins) && mins > 0) {
+        alert(`Feeding scheduled in ${mins} minute(s)`);
+        setTimeout(feedNow, mins * 60000);
+      } else {
+        alert("Enter a valid number of minutes");
+      }
+    }
+
+    // Check status every 5 seconds
+    setInterval(updateStatus, 5000);
+    updateStatus();
+  </script>
+</body>
+</html>
